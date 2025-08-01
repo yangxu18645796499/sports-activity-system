@@ -1,0 +1,265 @@
+# 依赖目录
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# 构建输出
+dist/
+build/
+.next/
+out/
+
+# 环境变量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志文件
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 运行时数据
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率目录
+coverage/
+*.lcov
+.nyc_output/
+
+# 测试结果
+test-results/
+junit.xml
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# 数据库
+*.sqlite
+*.sqlite3
+*.db
+
+# 上传文件
+uploads/
+static/uploads/
+public/uploads/
+
+# 缓存
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# 证书和密钥
+*.pem
+*.key
+*.crt
+*.p12
+certs/
+keys/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 本地配置
+config/local.json
+config/development.json
+config/production.json
+
+# Prisma
+.env
+migrations/
+
+# Redis dump
+dump.rdb
+
+# 监控数据
+prometheus_data/
+grafana_data/
+
+# 前端特定
+# Vite
+.vite/
+dist-ssr/
+*.local
+
+# React
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# 后端特定
+# Express
+sessions/
+
+# 测试
+# Jest
+coverage/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# 部署相关
+.vercel
+.netlify
+
+# 本地开发
+.local
+*.local
+
+# 性能分析
+.clinic/
+0x/
+
+# 安全扫描
+.snyk
+
+# 文档生成
+docs/build/
+
+# 移动端
+# React Native
+.expo/
+.expo-shared/
+
+# 桌面端
+# Electron
+dist_electron/
+
+# 微服务
+microservices/*/node_modules/
+microservices/*/dist/
+
+# 监控和日志
+logs/
+*.log
+error.log
+access.log
+app.log
+
+# 数据文件
+data/
+*.csv
+*.json.bak
+
+# 临时脚本
+scripts/temp/
+temp/
+
+# 本地工具
+tools/local/
+
+# 个人配置
+.personal/
+my-*
+
+# 实验性功能
+experimental/
+prototype/
+
+# 第三方集成
+integrations/local/
+
+# 性能测试
+performance/results/
+load-test-results/
+
+# 安全测试
+security/reports/
+vulnerability-reports/
+
+# 备份和归档
+backups/
+archive/
+*.archive
+
+# 本地数据库
+*.sqlite3
+*.db
+db.json
+
+# 本地存储
+storage/
+local-storage/
+
+# 缓存文件
+.cache
+.tmp
+.temp
+
+# 编译产物
+*.o
+*.so
+*.dylib
+*.dll
+
+# 包管理器锁文件 (根据团队约定选择保留或忽略)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# 环境特定的配置
+config.local.js
+config.development.js
+config.production.js
+
+# 本地服务
+services/local/
+
+# 调试文件
+debug/
+*.debug
+
+# 分析报告
+analysis/
+reports/
+
+# 本地脚本
+local-scripts/
+my-scripts/

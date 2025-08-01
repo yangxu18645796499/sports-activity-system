@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token调试</title>
+</head>
+<body>
+    <h1>Token调试工具</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        log('🔍 检查localStorage中的认证信息...');
+        
+        // 检查所有localStorage项
+        log('localStorage中的所有项:');
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            log(`${key}: ${value}`);
+        }
+        
+        // 检查auth-storage
+        const authStorage = localStorage.getItem('auth-storage');
+        if (authStorage) {
+            try {
+                const parsed = JSON.parse(authStorage);
+                log('✅ auth-storage解析成功:');
+                log(JSON.stringify(parsed, null, 2));
+                
+                const token = parsed.state?.token;
+                if (token) {
+                    log('✅ 找到token: ' + token.substring(0, 20) + '...');
+                } else {
+                    log('❌ 未找到token');
+                }
+            } catch (error) {
+                log('❌ auth-storage解析失败: ' + error.message);
+            }
+        } else {
+            log('❌ 未找到auth-storage');
+        }
+        
+        // 测试token获取函数
+        const getToken = () => {
+            const authStorage = localStorage.getItem('auth-storage');
+            if (authStorage) {
+                try {
+                    const { state } = JSON.parse(authStorage);
+                    return state?.token;
+                } catch (error) {
+                    console.error('Failed to parse auth storage:', error);
+                }
+            }
+            return null;
+        };
+        
+        const token = getToken();
+        log('\n🔍 使用getToken函数获取的结果: ' + (token || '未获取到'));
+        
+        // 测试头像上传请求构建
+        if (token) {
+            log('\n🔍 测试头像上传请求构建...');
+            
+            const formData = new FormData();
+            const testFile = new Blob(['test'], { type: 'image/png' });
+            formData.append('avatar', testFile, 'test.png');
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`
+            };
+            
+            log('请求头Authorization: ' + headers.Authorization.substring(0, 30) + '...');
+            log('✅ 头像上传请求构建成功');
+        }
+    </script>
+</body>
+</html>

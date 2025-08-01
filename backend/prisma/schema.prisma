@@ -1,0 +1,239 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  username    String   @unique
+  password    String
+  nickname    String?
+  avatar      String?
+  phone       String?
+  gender      Gender?  @default(UNKNOWN)
+  birthday    DateTime?
+  bio         String?
+  isActive    Boolean  @default(true)
+  role        UserRole @default(USER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联关系
+  activities  Activity[]
+  orders      Order[]
+  comments    Comment[]
+  likes       CommentLike[]
+  searches    SearchHistory[]
+  activityLikes ActivityLike[]
+  
+  @@map("users")
+}
+
+// 活动表
+model Activity {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  content       String?
+  category      ActivityCategory
+  type          ActivityType   @default(OFFLINE)
+  status        ActivityStatus @default(DRAFT)
+  maxParticipants Int?
+  currentParticipants Int @default(0)
+  price         Decimal        @default(0)
+  location      String?
+  address       String?
+  latitude      Float?
+  longitude     Float?
+  startTime     DateTime
+  endTime       DateTime
+  registrationDeadline DateTime?
+  coverImage    String? // 封面图片URL
+  images        String? // 其他图片JSON array
+  tags          String? // JSON array
+  requirements  String?
+  contactInfo   String?
+  isRecommended Boolean        @default(false)
+  viewCount     Int            @default(0)
+  likeCount     Int            @default(0)
+  shareCount    Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  // 关联关系
+  organizerId   String
+  organizer     User           @relation(fields: [organizerId], references: [id])
+  orders        Order[]
+  comments      Comment[]
+  likes         ActivityLike[]
+  
+  @@map("activities")
+}
+
+// 订单表
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique @default(cuid())
+  status      OrderStatus @default(PENDING)
+  totalAmount Decimal
+  participants Int        @default(1)
+  paymentMethod String?
+  paymentTime DateTime?
+  cancelReason String?
+  refundAmount Decimal?
+  refundTime  DateTime?
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // 关联关系
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  activityId  String
+  activity    Activity    @relation(fields: [activityId], references: [id])
+  
+  @@map("orders")
+}
+
+// 评论表
+model Comment {
+  id        String        @id @default(cuid())
+  content   String
+  rating    Int?          @default(5) // 1-5星评分
+  images    String? // JSON array
+  status    CommentStatus @default(PENDING)
+  likeCount Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  
+  // 关联关系
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  activityId String
+  activity   Activity      @relation(fields: [activityId], references: [id])
+  parentId   String?
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    Comment[]     @relation("CommentReplies")
+  likes      CommentLike[]
+  
+  @@map("comments")
+}
+
+// 活动点赞表
+model ActivityLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // 关联关系
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id])
+  
+  @@unique([userId, activityId])
+  @@map("activity_likes")
+}
+
+// 评论点赞表
+model CommentLike {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  // 关联关系
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  commentId String
+  comment   Comment  @relation(fields: [commentId], references: [id])
+  
+  @@unique([userId, commentId])
+  @@map("comment_likes")
+}
+
+// 搜索历史表
+model SearchHistory {
+  id        String   @id @default(cuid())
+  keyword   String
+  createdAt DateTime @default(now())
+  
+  // 关联关系
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@map("search_history")
+}
+
+// 枚举类型
+enum Gender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  ORGANIZER
+  SUPER_ADMIN
+}
+
+enum ActivityCategory {
+  BASKETBALL
+  FOOTBALL
+  BADMINTON
+  TENNIS
+  SWIMMING
+  RUNNING
+  YOGA
+  FITNESS
+  VOLLEYBALL
+  PINGPONG
+  CYCLING
+  HIKING
+  DANCING
+  MARTIAL_ARTS
+  GOLF
+  SKIING
+  CLIMBING
+  BOXING
+  GYMNASTICS
+  OTHER
+}
+
+enum ActivityType {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum ActivityStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

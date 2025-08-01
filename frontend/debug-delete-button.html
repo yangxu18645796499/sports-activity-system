@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>删除按钮调试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .debug-info {
+            background: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 删除按钮调试页面</h1>
+    
+    <div class="debug-info">
+        <h3>测试步骤：</h3>
+        <ol>
+            <li>点击"登录测试用户"按钮</li>
+            <li>点击"获取测试活动"按钮</li>
+            <li>查看删除按钮显示逻辑的调试信息</li>
+        </ol>
+    </div>
+    
+    <button class="btn-primary" onclick="loginUser()">登录测试用户</button>
+    <button class="btn-primary" onclick="getTestActivity()">获取测试活动</button>
+    <button class="btn-danger" onclick="clearLogs()">清除日志</button>
+    
+    <div id="logs"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let currentUser = null;
+        let currentToken = null;
+        let currentActivity = null;
+        
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `debug-info ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            logsDiv.appendChild(logDiv);
+            console.log(message);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+        
+        async function loginUser() {
+            try {
+                log('🔐 开始登录测试用户...');
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.user && data.token) {
+                    currentUser = data.user;
+                    currentToken = data.token;
+                    log(`✅ 登录成功！用户ID: ${currentUser.id}, 用户名: ${currentUser.username}`, 'success');
+                } else {
+                    log(`❌ 登录失败: ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ 登录错误: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getTestActivity() {
+            if (!currentUser || !currentToken) {
+                log('❌ 请先登录！', 'error');
+                return;
+            }
+            
+            try {
+                log('🎯 获取测试活动...');
+                
+                // 获取活动列表
+                const listResponse = await fetch(`${API_BASE}/activities?page=1&limit=10`);
+                const listData = await listResponse.json();
+                
+                if (listData.activities && listData.activities.length > 0) {
+                    // 找到测试活动
+                    const testActivity = listData.activities.find(activity => 
+                        activity.title.includes('删除按钮测试活动')
+                    );
+                    
+                    if (testActivity) {
+                        currentActivity = testActivity;
+                        log(`✅ 找到测试活动: ${testActivity.title} (ID: ${testActivity.id})`, 'success');
+                        
+                        // 获取活动详情
+                        const detailResponse = await fetch(`${API_BASE}/activities/${testActivity.id}`);
+                        const detailData = await detailResponse.json();
+                        
+                        if (detailResponse.ok) {
+                            currentActivity = detailData;
+                            log(`✅ 活动详情获取成功`, 'success');
+                            
+                            // 执行删除按钮显示逻辑检查
+                            checkDeleteButtonLogic();
+                        } else {
+                            log(`❌ 获取活动详情失败: ${JSON.stringify(detailData)}`, 'error');
+                        }
+                    } else {
+                        log('❌ 未找到测试活动，请先运行测试脚本创建活动', 'error');
+                    }
+                } else {
+                    log('❌ 没有找到任何活动', 'error');
+                }
+            } catch (error) {
+                log(`❌ 获取活动错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function checkDeleteButtonLogic() {
+            if (!currentUser || !currentActivity) {
+                log('❌ 缺少用户或活动信息', 'error');
+                return;
+            }
+            
+            log('🔍 开始检查删除按钮显示逻辑...');
+            
+            // 模拟前端逻辑
+            const isAuthenticated = !!currentUser;
+            const user = currentUser;
+            const activity = currentActivity;
+            
+            log(`📊 调试信息:`);
+            log(`   - isAuthenticated: ${isAuthenticated}`);
+            log(`   - user: ${user ? JSON.stringify({id: user.id, username: user.username}) : 'null'}`);
+            log(`   - activity.organizer: ${activity.organizer ? JSON.stringify({id: activity.organizer.id, username: activity.organizer.username}) : 'null'}`);
+            
+            const isUserLoggedIn = isAuthenticated && user;
+            const isCreator = user && activity.organizer && user.id === activity.organizer.id;
+            const activityStartTime = new Date(activity.startTime);
+            const now = new Date();
+            const hasNotStarted = activityStartTime > now;
+            
+            log(`🔍 删除按钮显示条件检查:`);
+            log(`   - 用户已登录: ${isUserLoggedIn}`);
+            log(`   - 当前用户ID: ${user ? user.id : 'null'}`);
+            log(`   - 活动创建者ID: ${activity.organizer ? activity.organizer.id : 'null'}`);
+            log(`   - 是否为创建者: ${isCreator}`);
+            log(`   - 当前时间: ${now.toISOString()}`);
+            log(`   - 活动开始时间: ${activity.startTime}`);
+            log(`   - 活动未开始: ${hasNotStarted}`);
+            
+            const shouldShowDeleteButton = isUserLoggedIn && isCreator && hasNotStarted;
+            log(`   - 应该显示删除按钮: ${shouldShowDeleteButton}`);
+            
+            if (shouldShowDeleteButton) {
+                log('✅ 删除按钮应该显示！', 'success');
+            } else {
+                log('❌ 删除按钮不应该显示', 'error');
+                
+                if (!isUserLoggedIn) log('   原因: 用户未登录', 'error');
+                if (!isCreator) log('   原因: 不是活动创建者', 'error');
+                if (!hasNotStarted) log('   原因: 活动已开始', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

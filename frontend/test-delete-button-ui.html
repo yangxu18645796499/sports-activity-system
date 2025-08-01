@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>删除按钮UI测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        .warning { color: #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .delete-btn {
+            background: #dc3545;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        .activity-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #fff;
+        }
+        .activity-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .activity-info {
+            color: #666;
+            margin: 5px 0;
+        }
+        .button-group {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ 删除按钮UI测试</h1>
+        <p>这个页面用于测试删除按钮的前端交互逻辑</p>
+        
+        <div class="button-group">
+            <button onclick="setupTest()">🚀 设置测试环境</button>
+            <button onclick="testDeleteButton()">🧪 测试删除按钮</button>
+            <button onclick="clearLogs()">🧹 清空日志</button>
+        </div>
+        
+        <div id="activity-container"></div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let currentUser = null;
+        let currentActivity = null;
+        let authToken = null;
+
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function setupTest() {
+            try {
+                log('🚀 开始设置测试环境...', 'info');
+                
+                // 1. 登录用户
+                log('1️⃣ 用户登录...', 'info');
+                const loginResponse = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                
+                if (loginResponse.ok && loginData.user && loginData.token) {
+                    currentUser = loginData.user;
+                    authToken = loginData.token;
+                    log(`✅ 登录成功: ${currentUser.username}`, 'success');
+                } else {
+                    throw new Error('登录失败: ' + JSON.stringify(loginData));
+                }
+                
+                // 2. 创建测试活动
+                log('2️⃣ 创建测试活动...', 'info');
+                const activityData = {
+                    title: '🗑️ UI删除测试活动',
+                    description: '这是一个用于测试前端删除按钮的活动',
+                    category: '篮球',
+                    location: '测试体育馆',
+                    startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    endTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+                    registrationDeadline: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+                    maxParticipants: 10,
+                    price: 0
+                };
+                
+                const createResponse = await fetch(`${API_BASE}/activities`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(activityData)
+                });
+                
+                const createData = await createResponse.json();
+                
+                if (createResponse.ok && createData.success) {
+                    currentActivity = createData.data.activity;
+                    log(`✅ 活动创建成功: ${currentActivity.title}`, 'success');
+                    log(`   活动ID: ${currentActivity.id}`, 'info');
+                    
+                    // 显示活动卡片
+                    displayActivityCard();
+                } else {
+                    throw new Error('活动创建失败: ' + JSON.stringify(createData));
+                }
+                
+                log('🎉 测试环境设置完成！', 'success');
+                
+            } catch (error) {
+                log(`❌ 设置失败: ${error.message}`, 'error');
+            }
+        }
+
+        function displayActivityCard() {
+            if (!currentActivity) return;
+            
+            const container = document.getElementById('activity-container');
+            container.innerHTML = `
+                <div class="activity-card">
+                    <div class="activity-title">${currentActivity.title}</div>
+                    <div class="activity-info">📍 地点: ${currentActivity.location}</div>
+                    <div class="activity-info">👥 最大人数: ${currentActivity.maxParticipants}</div>
+                    <div class="activity-info">💰 价格: ${currentActivity.price === 0 ? '免费' : '¥' + currentActivity.price}</div>
+                    <div class="activity-info">⏰ 开始时间: ${new Date(currentActivity.startTime).toLocaleString()}</div>
+                    <div class="activity-info">👤 创建者: ${currentUser?.username}</div>
+                    
+                    <div class="button-group">
+                        <button class="delete-btn" onclick="handleDeleteActivity()">
+                            🗑️ 删除活动
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function handleDeleteActivity() {
+            if (!currentActivity) {
+                log('❌ 没有活动可删除', 'error');
+                return;
+            }
+            
+            log('🗑️ 用户点击删除按钮', 'info');
+            
+            // 模拟确认弹窗
+            const confirmed = confirm(`您确定要删除活动「${currentActivity.title}」吗？\n\n⚠️ 此操作不可撤销，删除后所有相关数据将永久丢失！`);
+            
+            if (!confirmed) {
+                log('❌ 用户取消删除操作', 'warning');
+                return;
+            }
+            
+            log('✅ 用户确认删除，开始执行删除...', 'info');
+            
+            try {
+                const deleteResponse = await fetch(`${API_BASE}/activities/${currentActivity.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const deleteData = await deleteResponse.json();
+                
+                if (deleteResponse.ok && deleteData.success) {
+                    log('✅ 删除成功！', 'success');
+                    log('🔄 模拟跳转到活动列表页面...', 'info');
+                    
+                    // 清空活动卡片
+                    document.getElementById('activity-container').innerHTML = '<p style="color: #28a745; text-align: center; padding: 20px;">✅ 活动已删除，已跳转到活动列表页面</p>';
+                    
+                    // 验证删除结果
+                    await verifyDeletion();
+                    
+                } else {
+                    throw new Error(deleteData.message || '删除失败');
+                }
+                
+            } catch (error) {
+                log(`❌ 删除失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyDeletion() {
+            try {
+                log('🔍 验证删除结果...', 'info');
+                
+                // 尝试获取已删除的活动
+                const response = await fetch(`${API_BASE}/activities/${currentActivity.id}`);
+                
+                if (response.status === 404) {
+                    log('✅ 验证成功：活动已从数据库中删除', 'success');
+                } else {
+                    log('❌ 验证失败：活动仍然存在', 'error');
+                }
+                
+                // 检查活动列表
+                const listResponse = await fetch(`${API_BASE}/activities`);
+                const listData = await listResponse.json();
+                const activities = listData.data?.activities || [];
+                
+                const foundInList = activities.find(a => a.id === currentActivity.id);
+                if (!foundInList) {
+                    log('✅ 验证成功：活动已从列表中移除', 'success');
+                } else {
+                    log('❌ 验证失败：活动仍在列表中', 'error');
+                }
+                
+                currentActivity = null;
+                
+            } catch (error) {
+                log(`❌ 验证过程出错: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDeleteButton() {
+            log('🧪 开始测试删除按钮功能...', 'info');
+            
+            if (!currentActivity) {
+                log('❌ 请先设置测试环境', 'error');
+                return;
+            }
+            
+            log('📋 删除按钮测试清单:', 'info');
+            log('  ✅ 删除按钮已显示', 'success');
+            log('  ✅ 点击按钮会显示确认弹窗', 'success');
+            log('  ✅ 确认后调用删除API', 'success');
+            log('  ✅ 删除成功后模拟页面跳转', 'success');
+            log('  ✅ 验证数据库中数据已删除', 'success');
+            log('\n💡 请点击上方的"🗑️ 删除活动"按钮进行实际测试', 'info');
+        }
+
+        // 页面加载完成后的初始化
+        window.onload = function() {
+            log('🌟 删除按钮UI测试页面已加载', 'info');
+            log('📝 使用说明:', 'info');
+            log('  1. 点击"🚀 设置测试环境"创建测试活动', 'info');
+            log('  2. 点击活动卡片中的"🗑️ 删除活动"按钮', 'info');
+            log('  3. 在确认弹窗中选择确认或取消', 'info');
+            log('  4. 观察删除过程和结果验证', 'info');
+        };
+    </script>
+</body>
+</html>
