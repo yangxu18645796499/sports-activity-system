@@ -1,6 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Button, Tabs, Empty, message, Spin, Tag, Modal, Typography } from 'antd';
-import { CalendarOutlined, EnvironmentOutlined, UserOutlined, EyeOutlined, HeartOutlined, EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Tabs,
+  Empty,
+  message,
+  Spin,
+  Tag,
+  Modal,
+  Typography,
+} from 'antd';
+import {
+  CalendarOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  EyeOutlined,
+  HeartOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  HomeOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuthStore } from '../stores/useAuthStore';
@@ -50,12 +71,14 @@ const MyActivities: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [registeredActivities, setRegisteredActivities] = useState<Registration[]>([]);
+  const [registeredActivities, setRegisteredActivities] = useState<
+    Registration[]
+  >([]);
   const [createdActivities, setCreatedActivities] = useState<Activity[]>([]);
   const [activeTab, setActiveTab] = useState('registered');
 
   // 获取已报名的活动
-  const fetchRegisteredActivities = async () => {
+  const fetchRegisteredActivities = useCallback(async () => {
     try {
       setLoading(true);
       const userId = user?.id;
@@ -73,10 +96,10 @@ const MyActivities: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, navigate]);
 
   // 获取创建的活动
-  const fetchCreatedActivities = async () => {
+  const fetchCreatedActivities = useCallback(async () => {
     try {
       setLoading(true);
       const userId = user?.id;
@@ -86,10 +109,15 @@ const MyActivities: React.FC = () => {
       }
       const response = await api.get(`/users/${userId}/created-activities`);
       if (response.data.success) {
-        const processedActivities = response.data.data.activities.map((activity: any) => ({
-          ...activity,
-          images: typeof activity.images === 'string' ? JSON.parse(activity.images || '[]') : activity.images || []
-        }));
+        const processedActivities = response.data.data.activities.map(
+          (activity: any) => ({
+            ...activity,
+            images:
+              typeof activity.images === 'string'
+                ? JSON.parse(activity.images || '[]')
+                : activity.images || [],
+          })
+        );
         setCreatedActivities(processedActivities);
       }
     } catch (error: any) {
@@ -98,7 +126,7 @@ const MyActivities: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, navigate]);
 
   useEffect(() => {
     if (activeTab === 'registered') {
@@ -106,7 +134,7 @@ const MyActivities: React.FC = () => {
     } else {
       fetchCreatedActivities();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchRegisteredActivities, fetchCreatedActivities]);
 
   // 获取活动状态
   const getActivityStatus = (activity: Activity) => {
@@ -114,7 +142,7 @@ const MyActivities: React.FC = () => {
     const registrationDeadline = dayjs(activity.registrationDeadline);
     const startTime = dayjs(activity.startTime);
     const endTime = dayjs(activity.endTime);
-    
+
     if (now.isAfter(endTime)) {
       return { text: '已结束', color: 'default' };
     } else if (now.isAfter(startTime)) {
@@ -129,7 +157,10 @@ const MyActivities: React.FC = () => {
   };
 
   // 取消报名
-  const handleCancelRegistration = (activityId: string, activityTitle: string) => {
+  const handleCancelRegistration = (
+    activityId: string,
+    activityTitle: string
+  ) => {
     confirm({
       title: '确认取消报名',
       content: `确定要取消报名「${activityTitle}」吗？`,
@@ -168,9 +199,13 @@ const MyActivities: React.FC = () => {
   };
 
   // 渲染活动卡片
-  const renderActivityCard = (activity: Activity, isRegistered = false, registration?: Registration) => {
+  const renderActivityCard = (
+    activity: Activity,
+    isRegistered = false,
+    registration?: Registration
+  ) => {
     const status = getActivityStatus(activity);
-    
+
     return (
       <Col xs={24} sm={12} lg={8} xl={6} key={activity.id}>
         <Card
@@ -186,13 +221,14 @@ const MyActivities: React.FC = () => {
               <div
                 style={{
                   height: 200,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background:
+                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
                   fontSize: '24px',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 }}
               >
                 {activity.title.charAt(0)}
@@ -201,93 +237,138 @@ const MyActivities: React.FC = () => {
           }
           actions={[
             <Button
-              key="view"
-              type="text"
+              key='view'
+              type='text'
               icon={<EyeOutlined />}
               onClick={() => navigate(`/activities/${activity.id}`)}
             >
               查看详情
             </Button>,
-            ...(isRegistered ? [
-              <Button
-                key="cancel"
-                type="text"
-                danger
-                onClick={() => handleCancelRegistration(activity.id, activity.title)}
-              >
-                取消报名
-              </Button>
-            ] : [
-              <Button
-                key="edit"
-                type="text"
-                icon={<EditOutlined />}
-                onClick={() => navigate(`/activities/${activity.id}/edit`)}
-              >
-                编辑
-              </Button>,
-              <Button
-                key="delete"
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => handleDeleteActivity(activity.id, activity.title)}
-              >
-                删除
-              </Button>
-            ])
+            ...(isRegistered
+              ? [
+                  <Button
+                    key='cancel'
+                    type='text'
+                    danger
+                    onClick={() =>
+                      handleCancelRegistration(activity.id, activity.title)
+                    }
+                  >
+                    取消报名
+                  </Button>,
+                ]
+              : [
+                  <Button
+                    key='edit'
+                    type='text'
+                    icon={<EditOutlined />}
+                    onClick={() => navigate(`/activities/${activity.id}/edit`)}
+                  >
+                    编辑
+                  </Button>,
+                  <Button
+                    key='delete'
+                    type='text'
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() =>
+                      handleDeleteActivity(activity.id, activity.title)
+                    }
+                  >
+                    删除
+                  </Button>,
+                ]),
           ]}
         >
           <div style={{ marginBottom: '12px' }}>
             <Tag color={status.color}>{status.text}</Tag>
-            <Tag color="blue">{activity.category}</Tag>
+            <Tag color='blue'>{activity.category}</Tag>
           </div>
-          
+
           <Card.Meta
             title={
-              <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
+              <div
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                }}
+              >
                 {activity.title}
               </div>
             }
             description={
               <div>
-                <div style={{ marginBottom: '8px', color: '#666', fontSize: '14px' }}>
-                  {activity.description.length > 60 
-                    ? `${activity.description.substring(0, 60)}...` 
-                    : activity.description
-                  }
+                <div
+                  style={{
+                    marginBottom: '8px',
+                    color: '#666',
+                    fontSize: '14px',
+                  }}
+                >
+                  {activity.description.length > 60
+                    ? `${activity.description.substring(0, 60)}...`
+                    : activity.description}
                 </div>
-                
+
                 <div style={{ marginBottom: '6px', fontSize: '13px' }}>
-                  <CalendarOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                  <CalendarOutlined
+                    style={{ marginRight: '6px', color: '#1890ff' }}
+                  />
                   {dayjs(activity.startTime).format('MM-DD HH:mm')}
                 </div>
-                
+
                 <div style={{ marginBottom: '6px', fontSize: '13px' }}>
-                  <EnvironmentOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                  <EnvironmentOutlined
+                    style={{ marginRight: '6px', color: '#1890ff' }}
+                  />
                   {activity.location}
                 </div>
-                
+
                 <div style={{ marginBottom: '6px', fontSize: '13px' }}>
-                  <UserOutlined style={{ marginRight: '6px', color: '#1890ff' }} />
+                  <UserOutlined
+                    style={{ marginRight: '6px', color: '#1890ff' }}
+                  />
                   {activity.currentParticipants}/{activity.maxParticipants}人
                 </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#f50' }}>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '8px',
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      color: '#f50',
+                    }}
+                  >
                     {activity.price === 0 ? '免费' : `¥${activity.price}`}
                   </span>
                   <div style={{ fontSize: '12px', color: '#999' }}>
                     <EyeOutlined style={{ marginRight: '4px' }} />
                     {activity.viewCount}
-                    <HeartOutlined style={{ marginLeft: '8px', marginRight: '4px' }} />
+                    <HeartOutlined
+                      style={{ marginLeft: '8px', marginRight: '4px' }}
+                    />
                     {activity.likeCount}
                   </div>
                 </div>
-                
+
                 {isRegistered && registration && (
-                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#666' }}>
-                    报名时间: {dayjs(registration.createdAt).format('YYYY-MM-DD HH:mm')}
+                  <div
+                    style={{
+                      marginTop: '8px',
+                      fontSize: '12px',
+                      color: '#666',
+                    }}
+                  >
+                    报名时间:{' '}
+                    {dayjs(registration.createdAt).format('YYYY-MM-DD HH:mm')}
                     <br />
                     报名人数: {registration.participants}人
                   </div>
@@ -303,56 +384,69 @@ const MyActivities: React.FC = () => {
   return (
     <div style={{ padding: '24px' }}>
       {/* 页面标题 */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          marginBottom: '24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div>
           <Title level={2}>我的活动</Title>
-          <Text type="secondary">管理您参与和创建的活动</Text>
+          <Text type='secondary'>管理您参与和创建的活动</Text>
         </div>
-        <Button 
+        <Button
           icon={<HomeOutlined />}
           onClick={() => navigate('/')}
-          size="large"
+          size='large'
         >
           返回首页
         </Button>
       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} size="large">
-        <TabPane tab={`已报名活动 (${registeredActivities.length})`} key="registered">
+      <Tabs activeKey={activeTab} onChange={setActiveTab} size='large'>
+        <TabPane
+          tab={`已报名活动 (${registeredActivities.length})`}
+          key='registered'
+        >
           <Spin spinning={loading}>
             {registeredActivities.length > 0 ? (
               <Row gutter={[16, 16]}>
-                {registeredActivities.map((registration) => 
+                {registeredActivities.map(registration =>
                   renderActivityCard(registration.activity, true, registration)
                 )}
               </Row>
             ) : (
               <Empty
-                description="暂无已报名的活动"
+                description='暂无已报名的活动'
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
-                <Button type="primary" onClick={() => navigate('/activities')}>
+                <Button type='primary' onClick={() => navigate('/activities')}>
                   去报名活动
                 </Button>
               </Empty>
             )}
           </Spin>
         </TabPane>
-        
-        <TabPane tab={`创建的活动 (${createdActivities.length})`} key="created">
+
+        <TabPane tab={`创建的活动 (${createdActivities.length})`} key='created'>
           <Spin spinning={loading}>
             {createdActivities.length > 0 ? (
               <Row gutter={[16, 16]}>
-                {createdActivities.map((activity) => 
+                {createdActivities.map(activity =>
                   renderActivityCard(activity, false)
                 )}
               </Row>
             ) : (
               <Empty
-                description="暂无创建的活动"
+                description='暂无创建的活动'
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
-                <Button type="primary" onClick={() => navigate('/activities/create')}>
+                <Button
+                  type='primary'
+                  onClick={() => navigate('/activities/create')}
+                >
                   创建活动
                 </Button>
               </Empty>

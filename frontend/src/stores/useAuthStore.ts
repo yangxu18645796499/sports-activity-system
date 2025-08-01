@@ -2,6 +2,15 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../config/api';
 
+// Helper function to extract error message
+const getErrorMessage = (error: unknown, defaultMessage: string): string => {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const errorObj = error as { response?: { data?: { error?: string } } };
+    return errorObj.response?.data?.error || defaultMessage;
+  }
+  return defaultMessage;
+};
+
 export interface User {
   id: string;
   email: string;
@@ -57,14 +66,14 @@ export const useAuthStore = create<AuthStore>()(
       login: async (email: string, password: string) => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const response = await api.post('/auth/login', {
             email,
             password,
           });
 
           const { user, token } = response.data;
-          
+
           set({
             user,
             token,
@@ -72,8 +81,8 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.error || 'Login failed';
+        } catch (error: unknown) {
+          const errorMessage = getErrorMessage(error, 'Login failed');
           set({
             user: null,
             token: null,
@@ -85,14 +94,14 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (userData) => {
+      register: async userData => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const response = await api.post('/auth/register', userData);
 
           const { user, token } = response.data;
-          
+
           set({
             user,
             token,
@@ -100,8 +109,8 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.error || 'Registration failed';
+        } catch (error: unknown) {
+          const errorMessage = getErrorMessage(error, 'Registration failed');
           set({
             user: null,
             token: null,
@@ -125,17 +134,17 @@ export const useAuthStore = create<AuthStore>()(
       getProfile: async () => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const response = await api.get('/auth/profile');
           const { user } = response.data;
-          
+
           set({
             user,
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.error || 'Failed to get profile';
+        } catch (error: unknown) {
+          const errorMessage = getErrorMessage(error, 'Failed to get profile');
           set({
             isLoading: false,
             error: errorMessage,
@@ -144,20 +153,23 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      updateProfile: async (userData) => {
+      updateProfile: async userData => {
         try {
           set({ isLoading: true, error: null });
-          
+
           const response = await api.put('/auth/profile', userData);
           const { user } = response.data;
-          
+
           set({
             user,
             isLoading: false,
             error: null,
           });
-        } catch (error: any) {
-          const errorMessage = error.response?.data?.error || 'Failed to update profile';
+        } catch (error: unknown) {
+          const errorMessage = getErrorMessage(
+            error,
+            'Failed to update profile'
+          );
           set({
             isLoading: false,
             error: errorMessage,
@@ -177,16 +189,16 @@ export const useAuthStore = create<AuthStore>()(
       initializeAuth: async () => {
         const state = useAuthStore.getState();
         set({ _hasHydrated: true });
-        
+
         if (state.token && state.user) {
           try {
             // 验证token是否仍然有效
             await get().getProfile();
             // 如果getProfile成功，说明token有效
             set({ isAuthenticated: true });
-          } catch (error) {
+          } catch {
             // token无效，清除认证状态
-            console.log('Token expired or invalid, logging out');
+            // Token expired or invalid, logging out
             get().logout();
           }
         } else {
@@ -196,12 +208,12 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({
+      partialize: state => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => _state => {
         // 状态恢复后异步验证认证状态
         setTimeout(() => {
           const currentState = useAuthStore.getState();

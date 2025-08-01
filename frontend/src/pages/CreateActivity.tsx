@@ -44,7 +44,7 @@ const ACTIVITY_CATEGORIES = [
   '健身',
   '瑜伽',
   '舞蹈',
-  '其他'
+  '其他',
 ];
 
 const CreateActivity = () => {
@@ -63,16 +63,18 @@ const CreateActivity = () => {
       const registrationDeadline = values.registrationDeadline;
 
       // 处理图片上传
-      const images = fileList.map(file => {
-        if (file.response && file.response.url) {
-          return file.response.url; // 从上传响应中获取图片URL
-        }
-        if (file.url) {
-          return file.url; // 如果有直接的URL
-        }
-        return '';
-      }).filter(url => url);
-      
+      const images = fileList
+        .map(file => {
+          if (file.response && file.response.url) {
+            return file.response.url; // 从上传响应中获取图片URL
+          }
+          if (file.url) {
+            return file.url; // 如果有直接的URL
+          }
+          return '';
+        })
+        .filter(url => url);
+
       console.log('图片处理详情:', {
         fileListCount: fileList.length,
         fileListDetails: fileList.map(f => ({
@@ -81,14 +83,19 @@ const CreateActivity = () => {
           url: f.url,
           response: f.response,
           hasResponse: !!f.response,
-          responseUrl: f.response?.url
+          responseUrl: f.response?.url,
         })),
-        extractedImages: images
+        extractedImages: images,
       });
 
       console.log('创建活动 - 图片处理:', {
-        fileList: fileList.map(f => ({ name: f.name, status: f.status, url: f.url, response: f.response })),
-        processedImages: images
+        fileList: fileList.map(f => ({
+          name: f.name,
+          status: f.status,
+          url: f.url,
+          response: f.response,
+        })),
+        processedImages: images,
       });
 
       // 第一张图片作为封面（后端会自动处理这个逻辑，但前端也保持一致）
@@ -97,7 +104,7 @@ const CreateActivity = () => {
       console.log('创建活动 - 封面设置:', {
         coverImage,
         totalImages: images.length,
-        allImages: images
+        allImages: images,
       });
 
       // 准备提交的数据
@@ -117,11 +124,15 @@ const CreateActivity = () => {
       delete activityData.timeRange;
 
       // 发送请求创建活动
-      const response = await axios.post(`${API_BASE_URL}/activities`, activityData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.post(
+        `${API_BASE_URL}/activities`,
+        activityData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       message.success('活动创建成功！');
       navigate(`/activities/${response.data.data.activity.id}`);
@@ -133,7 +144,9 @@ const CreateActivity = () => {
     }
   };
 
-  const handleUploadChange = ({ fileList: newFileList }: UploadChangeParam<UploadFile>) => {
+  const handleUploadChange = ({
+    fileList: newFileList,
+  }: UploadChangeParam<UploadFile>) => {
     setFileList(newFileList);
   };
 
@@ -148,12 +161,20 @@ const CreateActivity = () => {
     <div style={{ padding: '24px' }}>
       <Card
         title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Title level={2} style={{ margin: 0 }}>创建新活动</Title>
-            <Button 
-              icon={<HomeOutlined />} 
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Title level={2} style={{ margin: 0 }}>
+              创建新活动
+            </Title>
+            <Button
+              icon={<HomeOutlined />}
               onClick={() => navigate('/')}
-              type="default"
+              type='default'
             >
               返回首页
             </Button>
@@ -163,7 +184,7 @@ const CreateActivity = () => {
       >
         <Form
           form={form}
-          layout="vertical"
+          layout='vertical'
           onFinish={handleSubmit}
           initialValues={{
             price: 0,
@@ -173,21 +194,21 @@ const CreateActivity = () => {
           <Row gutter={24}>
             <Col span={24}>
               <Form.Item
-                name="title"
-                label="活动标题"
+                name='title'
+                label='活动标题'
                 rules={[{ required: true, message: '请输入活动标题' }]}
               >
-                <Input placeholder="请输入活动标题" maxLength={100} />
+                <Input placeholder='请输入活动标题' maxLength={100} />
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item
-                name="category"
-                label="活动类别"
+                name='category'
+                label='活动类别'
                 rules={[{ required: true, message: '请选择活动类别' }]}
               >
-                <Select placeholder="请选择活动类别">
+                <Select placeholder='请选择活动类别'>
                   {ACTIVITY_CATEGORIES.map(category => (
                     <Option key={category} value={category}>
                       {category}
@@ -199,23 +220,23 @@ const CreateActivity = () => {
 
             <Col span={12}>
               <Form.Item
-                name="location"
-                label="活动地点"
+                name='location'
+                label='活动地点'
                 rules={[{ required: true, message: '请输入活动地点' }]}
               >
-                <Input placeholder="请输入活动地点" />
+                <Input placeholder='请输入活动地点' />
               </Form.Item>
             </Col>
 
             <Col span={12}>
               <Form.Item
-                name="timeRange"
-                label="活动时间"
+                name='timeRange'
+                label='活动时间'
                 rules={[{ required: true, message: '请选择活动时间' }]}
               >
                 <RangePicker
                   showTime
-                  format="YYYY-MM-DD HH:mm"
+                  format='YYYY-MM-DD HH:mm'
                   locale={locale}
                   style={{ width: '100%' }}
                 />
@@ -224,13 +245,13 @@ const CreateActivity = () => {
 
             <Col span={12}>
               <Form.Item
-                name="registrationDeadline"
-                label="报名截止时间"
+                name='registrationDeadline'
+                label='报名截止时间'
                 rules={[{ required: true, message: '请选择报名截止时间' }]}
               >
                 <DatePicker
                   showTime
-                  format="YYYY-MM-DD HH:mm"
+                  format='YYYY-MM-DD HH:mm'
                   locale={locale}
                   style={{ width: '100%' }}
                 />
@@ -239,8 +260,8 @@ const CreateActivity = () => {
 
             <Col span={12}>
               <Form.Item
-                name="maxParticipants"
-                label="最大参与人数"
+                name='maxParticipants'
+                label='最大参与人数'
                 rules={[{ required: true, message: '请输入最大参与人数' }]}
               >
                 <InputNumber min={1} style={{ width: '100%' }} />
@@ -249,8 +270,8 @@ const CreateActivity = () => {
 
             <Col span={12}>
               <Form.Item
-                name="price"
-                label="活动价格（元）"
+                name='price'
+                label='活动价格（元）'
                 rules={[{ required: true, message: '请输入活动价格' }]}
               >
                 <InputNumber min={0} precision={2} style={{ width: '100%' }} />
@@ -259,12 +280,12 @@ const CreateActivity = () => {
 
             <Col span={24}>
               <Form.Item
-                name="description"
-                label="活动描述"
+                name='description'
+                label='活动描述'
                 rules={[{ required: true, message: '请输入活动描述' }]}
               >
                 <TextArea
-                  placeholder="请详细描述活动内容、流程等信息"
+                  placeholder='请详细描述活动内容、流程等信息'
                   rows={6}
                   maxLength={2000}
                   showCount
@@ -273,54 +294,42 @@ const CreateActivity = () => {
             </Col>
 
             <Col span={24}>
-              <Form.Item
-                name="requirements"
-                label="参与要求"
-              >
+              <Form.Item name='requirements' label='参与要求'>
                 <TextArea
-                  placeholder="请输入参与者需要满足的条件或需要准备的物品等"
+                  placeholder='请输入参与者需要满足的条件或需要准备的物品等'
                   rows={4}
                 />
               </Form.Item>
             </Col>
 
             <Col span={24}>
-              <Form.Item
-                name="contactInfo"
-                label="联系方式"
-              >
-                <Input placeholder="请输入联系方式，如电话、微信等" />
+              <Form.Item name='contactInfo' label='联系方式'>
+                <Input placeholder='请输入联系方式，如电话、微信等' />
               </Form.Item>
             </Col>
 
             <Col span={24}>
-              <Form.Item
-                name="tags"
-                label="活动标签"
-              >
+              <Form.Item name='tags' label='活动标签'>
                 <Select
-                  mode="tags"
-                  placeholder="请输入活动标签，按回车键确认"
+                  mode='tags'
+                  placeholder='请输入活动标签，按回车键确认'
                   style={{ width: '100%' }}
                 />
               </Form.Item>
             </Col>
 
             <Col span={24}>
-              <Form.Item
-                name="images"
-                label="活动图片"
-              >
+              <Form.Item name='images' label='活动图片'>
                 <Upload
                   action={`${API_BASE_URL}/upload`}
-                  listType="picture-card"
+                  listType='picture-card'
                   fileList={fileList}
                   onChange={handleUploadChange}
-                  name="image"
+                  name='image'
                   headers={{
                     Authorization: `Bearer ${token}`,
                   }}
-                  beforeUpload={(file) => {
+                  beforeUpload={file => {
                     const isImage = file.type.startsWith('image/');
                     if (!isImage) {
                       message.error('只能上传图片文件!');
@@ -334,10 +343,15 @@ const CreateActivity = () => {
                   onSuccess={(response, file) => {
                     console.log('图片上传成功:', { response, file });
                     // 更新fileList，添加服务器返回的URL
-                    setFileList(prevList => 
-                      prevList.map(item => 
-                        item.uid === file.uid 
-                          ? { ...item, status: 'done', response, url: response.url }
+                    setFileList(prevList =>
+                      prevList.map(item =>
+                        item.uid === file.uid
+                          ? {
+                              ...item,
+                              status: 'done',
+                              response,
+                              url: response.url,
+                            }
                           : item
                       )
                     );
@@ -350,9 +364,9 @@ const CreateActivity = () => {
                   {fileList.length >= 8 ? null : uploadButton}
                 </Upload>
                 <div>
-                  <Text type="secondary">最多上传8张图片，每张不超过5MB</Text>
+                  <Text type='secondary'>最多上传8张图片，每张不超过5MB</Text>
                   <br />
-                  <Text type="warning" style={{ fontSize: '12px' }}>
+                  <Text type='warning' style={{ fontSize: '12px' }}>
                     💡 提示：第一张图片将自动设置为活动封面
                   </Text>
                 </div>
@@ -364,12 +378,10 @@ const CreateActivity = () => {
 
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button type='primary' htmlType='submit' loading={loading}>
                 创建活动
               </Button>
-              <Button onClick={() => navigate('/activities')}>
-                取消
-              </Button>
+              <Button onClick={() => navigate('/activities')}>取消</Button>
             </Space>
           </Form.Item>
         </Form>

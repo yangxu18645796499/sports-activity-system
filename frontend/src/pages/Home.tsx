@@ -18,8 +18,9 @@ const { Title, Text } = Typography;
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated, getProfile, _hasHydrated } = useAuthStore();
-  const { stats, fetchStats, refreshStats, isLoading, error } = useStatsStore();
+  const { user, logout, isAuthenticated, getProfile, _hasHydrated } =
+    useAuthStore();
+  const { stats, fetchStats, refreshStats } = useStatsStore();
 
   useEffect(() => {
     // 获取用户信息
@@ -56,28 +57,28 @@ const Home: React.FC = () => {
   }
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="bg-white shadow-sm border-b">
-        <div className="flex justify-between items-center h-full max-w-7xl mx-auto px-4">
-          <div className="flex items-center space-x-4">
-            <Title level={3} className="m-0 text-blue-600">
+    <Layout className='min-h-screen'>
+      <Header className='bg-white shadow-sm border-b'>
+        <div className='flex justify-between items-center h-full max-w-7xl mx-auto px-4'>
+          <div className='flex items-center space-x-4'>
+            <Title level={3} className='m-0 text-blue-600'>
               运动活动管理系统
             </Title>
           </div>
-          
-          <div className="flex items-center space-x-4">
+
+          <div className='flex items-center space-x-4'>
             <Space>
-              <Button 
-                type="text" 
+              <Button
+                type='text'
                 icon={<UserOutlined />}
                 onClick={() => navigate('/profile')}
-                className="flex items-center"
+                className='flex items-center'
               >
                 <Text strong>{user.nickname || user.username}</Text>
               </Button>
-              <Button 
-                type="text" 
-                icon={<LogoutOutlined />} 
+              <Button
+                type='text'
+                icon={<LogoutOutlined />}
                 onClick={handleLogout}
               >
                 退出登录
@@ -87,79 +88,79 @@ const Home: React.FC = () => {
         </div>
       </Header>
 
-      <Content className="bg-gray-50">
-        <div className="max-w-7xl mx-auto p-6">
+      <Content className='bg-gray-50'>
+        <div className='max-w-7xl mx-auto p-6'>
           {/* 欢迎区域 */}
-          <div className="mb-8">
-            <Title level={2} className="text-gray-800">
+          <div className='mb-8'>
+            <Title level={2} className='text-gray-800'>
               欢迎回来，{user.nickname || user.username}！
             </Title>
-            <Text type="secondary" className="text-lg">
+            <Text type='secondary' className='text-lg'>
               探索精彩的运动活动，开启健康生活
             </Text>
           </div>
 
           {/* 功能卡片 */}
-          <Row gutter={[24, 24]} className="mb-8">
+          <Row gutter={[24, 24]} className='mb-8'>
             <Col xs={24} sm={12} lg={6}>
-              <Card 
+              <Card
                 hoverable
-                className="text-center h-full"
+                className='text-center h-full'
                 onClick={() => navigate('/activities')}
               >
-                <CalendarOutlined className="text-4xl text-blue-500 mb-4" />
+                <CalendarOutlined className='text-4xl text-blue-500 mb-4' />
                 <Title level={4}>浏览活动</Title>
-                <Text type="secondary">发现感兴趣的运动活动</Text>
+                <Text type='secondary'>发现感兴趣的运动活动</Text>
               </Card>
             </Col>
-            
+
             <Col xs={24} sm={12} lg={6}>
-              <Card 
+              <Card
                 hoverable
-                className="text-center h-full"
+                className='text-center h-full'
                 onClick={() => navigate('/my-activities')}
               >
-                <TeamOutlined className="text-4xl text-green-500 mb-4" />
+                <TeamOutlined className='text-4xl text-green-500 mb-4' />
                 <Title level={4}>我的活动</Title>
-                <Text type="secondary">管理已报名的活动</Text>
+                <Text type='secondary'>管理已报名的活动</Text>
               </Card>
             </Col>
-            
+
             <Col xs={24} sm={12} lg={6}>
-              <Card 
+              <Card
                 hoverable
-                className="text-center h-full"
+                className='text-center h-full'
                 onClick={() => navigate('/activities/create')}
               >
-                <TrophyOutlined className="text-4xl text-orange-500 mb-4" />
+                <TrophyOutlined className='text-4xl text-orange-500 mb-4' />
                 <Title level={4}>创建活动</Title>
-                <Text type="secondary">组织新的运动活动</Text>
+                <Text type='secondary'>组织新的运动活动</Text>
               </Card>
             </Col>
-            
+
             <Col xs={24} sm={12} lg={6}>
-              <Card 
+              <Card
                 hoverable
-                className="text-center h-full"
+                className='text-center h-full'
                 onClick={() => navigate('/profile')}
               >
-                <UserOutlined className="text-4xl text-purple-500 mb-4" />
+                <UserOutlined className='text-4xl text-purple-500 mb-4' />
                 <Title level={4}>个人中心</Title>
-                <Text type="secondary">管理个人信息</Text>
+                <Text type='secondary'>管理个人信息</Text>
               </Card>
             </Col>
-            
+
             {/* 管理员功能 */}
             {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
               <Col xs={24} sm={12} lg={6}>
-                <Card 
+                <Card
                   hoverable
-                  className="text-center h-full"
+                  className='text-center h-full'
                   onClick={() => navigate('/users')}
                 >
-                  <DatabaseOutlined className="text-4xl text-red-500 mb-4" />
+                  <DatabaseOutlined className='text-4xl text-red-500 mb-4' />
                   <Title level={4}>用户管理</Title>
-                  <Text type="secondary">查看和管理系统用户</Text>
+                  <Text type='secondary'>查看和管理系统用户</Text>
                 </Card>
               </Col>
             )}
@@ -169,30 +170,36 @@ const Home: React.FC = () => {
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={8}>
               <Card>
-                <div className="text-center">
-                  <TeamOutlined className="text-4xl text-blue-500 mb-2" />
-                  <Title level={2} className="text-blue-600 mb-2">{stats?.registeredActivities || 0}</Title>
-                  <Text type="secondary">已参加活动</Text>
+                <div className='text-center'>
+                  <TeamOutlined className='text-4xl text-blue-500 mb-2' />
+                  <Title level={2} className='text-blue-600 mb-2'>
+                    {stats?.registeredActivities || 0}
+                  </Title>
+                  <Text type='secondary'>已参加活动</Text>
                 </div>
               </Card>
             </Col>
-            
+
             <Col xs={24} lg={8}>
               <Card>
-                <div className="text-center">
-                  <TrophyOutlined className="text-4xl text-green-500 mb-2" />
-                  <Title level={2} className="text-green-600 mb-2">{stats?.createdActivities || 0}</Title>
-                  <Text type="secondary">创建的活动</Text>
+                <div className='text-center'>
+                  <TrophyOutlined className='text-4xl text-green-500 mb-2' />
+                  <Title level={2} className='text-green-600 mb-2'>
+                    {stats?.createdActivities || 0}
+                  </Title>
+                  <Text type='secondary'>创建的活动</Text>
                 </div>
               </Card>
             </Col>
-            
+
             <Col xs={24} lg={8}>
               <Card>
-                <div className="text-center">
-                  <CommentOutlined className="text-4xl text-orange-500 mb-2" />
-                  <Title level={2} className="text-orange-600 mb-2">{stats?.comments || 0}</Title>
-                  <Text type="secondary">活动评论</Text>
+                <div className='text-center'>
+                  <CommentOutlined className='text-4xl text-orange-500 mb-2' />
+                  <Title level={2} className='text-orange-600 mb-2'>
+                    {stats?.comments || 0}
+                  </Title>
+                  <Text type='secondary'>活动评论</Text>
                 </div>
               </Card>
             </Col>

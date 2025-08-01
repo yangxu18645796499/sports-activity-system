@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import axios from 'axios';
 import { useAuthStore } from './useAuthStore';
 
 interface UserStats {
@@ -17,7 +16,7 @@ interface StatsState {
   clearError: () => void;
 }
 
-export const useStatsStore = create<StatsState>((set, get) => ({
+export const useStatsStore = create<StatsState>((set, _get) => ({
   stats: null,
   isLoading: false,
   error: null,
@@ -26,40 +25,40 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const { isAuthenticated, token } = useAuthStore.getState();
-      
+
       if (!isAuthenticated || !token) {
-        set({ 
+        set({
           stats: null,
           isLoading: false,
-          error: '用户未登录' 
+          error: '用户未登录',
         });
         return;
       }
-      
+
       // 直接从数据库获取用户统计数据
       const response = await fetch('/api/users/me/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
-      
+
       if (!response.ok) {
         throw new Error(`获取统计数据失败: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      set({ 
+      set({
         stats: data.data || data,
         isLoading: false,
-        error: null 
+        error: null,
       });
-    } catch (error: any) {
-      console.error('获取统计数据失败:', error);
-      set({ 
+    } catch (error: unknown) {
+      // 获取统计数据失败
+      set({
         stats: null,
         isLoading: false,
-        error: error.message || '获取统计数据失败'
+        error: error.message || '获取统计数据失败',
       });
     }
   },
@@ -72,5 +71,5 @@ export const useStatsStore = create<StatsState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
-  }
+  },
 }));
